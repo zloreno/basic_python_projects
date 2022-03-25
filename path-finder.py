@@ -1,3 +1,4 @@
+# define queu as only the path, not the pos, path
 import curses
 from curses import wrapper
 import queue
@@ -14,6 +15,15 @@ maze = [
     ["#", " ", " ", " ", " ", " ", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#", "#", "X", "#"]
 ]
+
+
+def find_start(maze, start):
+    for i, row in enumerate(maze):
+        for j, value in enumerate(row):
+            if value == start:
+                return i, j
+
+    return None
 
 
 def print_maze(maze, stdscr, path=[]):
@@ -33,13 +43,24 @@ def print_maze(maze, stdscr, path=[]):
     stdscr.addstr(bottom_row, 0, bottom_text, BLUE)
 
 
-def find_start(maze, start):
-    for i, row in enumerate(maze):
-        for j, value in enumerate(row):
-            if value == start:
-                return i, j
+def append_if_valid(maze, input_row, input_column, nb):
+    if maze[input_row][input_column] != '#':
+        nb.append((input_row, input_column))
+    return nb
 
-    return None
+
+def find_nb(maze, row, col):
+    nb = []
+    if row > 0:  # Up
+        nb = append_if_valid(maze, input_row=row - 1, input_column=col, nb=nb)
+    if row + 1 < len(maze):  # Down
+        nb = append_if_valid(maze, input_row=row + 1, input_column=col, nb=nb)
+    if col > 0:  # Left
+        nb = append_if_valid(maze, input_row=row, input_column=col - 1, nb=nb)
+    if col + 1 < len(maze[0]):  # Right
+        nb = append_if_valid(maze, input_row=row, input_column=col + 1, nb=nb)
+
+    return nb
 
 
 def find_path(maze, stdscr):
@@ -73,26 +94,6 @@ def find_path(maze, stdscr):
             new_path = path + [nb]
             q.put((nb, new_path))
             visited.add(nb)
-
-
-def find_nb(maze, row, col):
-    nb = []
-    if row > 0:  # Up
-        nb = append_if_valid(maze, input_row=row - 1, input_column=col, nb=nb)
-    if row + 1 < len(maze):  # Down
-        nb = append_if_valid(maze, input_row=row + 1, input_column=col, nb=nb)
-    if col > 0:  # Left
-        nb = append_if_valid(maze, input_row=row, input_column=col - 1, nb=nb)
-    if col + 1 < len(maze[0]):  # Right
-        nb = append_if_valid(maze, input_row=row, input_column=col + 1, nb=nb)
-
-    return nb
-
-
-def append_if_valid(maze, input_row, input_column, nb):
-    if maze[input_row][input_column] != '#':
-        nb.append((input_row, input_column))
-    return nb
 
 
 def main(stdscr):
