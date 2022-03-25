@@ -1,10 +1,11 @@
-from ast import ExceptHandler
-from ctypes.wintypes import PINT
 from requests import get
 from pprint import PrettyPrinter
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+API_KEY = os.getenv('API_KEY')
 BASE_URL = "https://free.currconv.com/"
-API_KEY = 'e6a4244304652beee65a'
 
 printer = PrettyPrinter()
 
