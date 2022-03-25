@@ -1,5 +1,5 @@
 import curses
-from curses import color_pair, wrapper
+from curses import wrapper
 import queue
 import time
 
@@ -16,15 +16,90 @@ maze = [
 ]
 
 
-def main(stdscr):
-    # Define color settings
-    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    blue_and_black = curses.color_pair(1)
+def print_maze(maze, stdscr, path=[]):
+    BLUE = curses.color_pair(1)
+    RED = curses.color_pair(2)
 
-    stdscr.clear()
-    # Use color settings to the string
-    stdscr.addstr(5, 0, 'Hello World!', blue_and_black)
-    stdscr.refresh()
+    # Draw the maze into the terminal
+    for i, row in enumerate(maze):
+        for j, value in enumerate(row):
+            if (i, j) in path:
+                stdscr.addstr(i, j*2, 'X', RED)
+            else:
+                stdscr.addstr(i, j*2, value, BLUE)
+
+    bottom_text = f'path: {path}'
+    bottom_row = len(maze) + 1
+    stdscr.addstr(bottom_row, 0, bottom_text, BLUE)
+
+
+def find_start(maze, start):
+    for i, row in enumerate(maze):
+        for j, value in enumerate(row):
+            if value == start:
+                return i, j
+
+    return None
+
+
+def find_path(maze, stdscr):
+    start = 'O'
+    end = 'X'
+    start_pos = find_start(maze, start)
+
+    q = queue.Queue()
+    # add to the queue the position and the path that lead to said position
+    q.put((start_pos, [start_pos]))
+
+    visited = set()
+
+    while not q.empty():
+        current_pos, path = q.get()
+        row, col = current_pos
+
+        stdscr.clear()
+        print_maze(maze, stdscr, path)
+        time.sleep(0.2)
+        stdscr.refresh()
+
+        if maze[row][col] == end:
+            return path
+
+        nbs = find_nb(maze, row, col)
+        for nb in nbs:
+            if nb in visited:
+                continue
+
+            new_path = path + [nb]
+            q.put((nb, new_path))
+            visited.add(nb)
+
+
+def find_nb(maze, row, col):
+    nb = []
+    if row > 0:  # Up
+        nb = append_if_valid(maze, input_row=row - 1, input_column=col, nb=nb)
+    if row + 1 < len(maze):  # Down
+        nb = append_if_valid(maze, input_row=row + 1, input_column=col, nb=nb)
+    if col > 0:  # Left
+        nb = append_if_valid(maze, input_row=row, input_column=col - 1, nb=nb)
+    if col + 1 < len(maze[0]):  # Right
+        nb = append_if_valid(maze, input_row=row, input_column=col + 1, nb=nb)
+
+    return nb
+
+
+def append_if_valid(maze, input_row, input_column, nb):
+    if maze[input_row][input_column] != '#':
+        nb.append((input_row, input_column))
+    return nb
+
+
+def main(stdscr):
+    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+
+    find_path(maze, stdscr)
     stdscr.getch()
 
 
