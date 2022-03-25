@@ -1,3 +1,4 @@
+# make more interactive (don't know shit about basketball tho)
 from requests import get
 from pprint import PrettyPrinter
 
